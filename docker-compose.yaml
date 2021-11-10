@@ -1,0 +1,35 @@
+version: '3'
+services:
+
+  transacao_api:
+    build:
+      dockerfile: dockerfile
+      context: .
+    image: raphaelfeitosa/ot9-transacao-api:0.0.1-SNAPSHOT
+    restart: on-failure
+    container_name: transacao_api
+    ports:
+      - 8081:8081
+    depends_on:
+      - transacao_api_db
+    environment:
+      APPLICATION_PORT: 8081
+      BB_URL: jdbc:mysql://transacao_api_db:3306/transacao_api_db?createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC
+      DB_USER: root
+      DB_PASSWORD: password
+
+  transacao_api_db:
+    image: mysql:8.0.23
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    container_name: transacao_api_db
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=transacao_api_db
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - mysql-volume-transacao:/var/lib/mysql
+
+volumes:
+  mysql-volume-transacao:
