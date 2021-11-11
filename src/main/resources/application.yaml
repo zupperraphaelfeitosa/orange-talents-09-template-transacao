@@ -31,3 +31,11 @@ spring:
       auto-offset-reset: ${KAFKA_AUTO-OFFSET-RESET:latest}
     topic:
       transactions: transacoes
+
+# Key Cloack
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18080/auth/realms/transacoes}
+          jwk-set-uri: ${KEYCLOAK_JWKS_URI:http://localhost:18080/auth/realms/transacoes/protocol/openid-connect/certs}
