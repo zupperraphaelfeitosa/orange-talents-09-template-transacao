@@ -1,5 +1,7 @@
 package br.com.zup.raphaelfeitosa.transacao.transaction;
 
+import org.springframework.data.domain.Page;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -17,12 +19,12 @@ public class TransactionMessage {
     public TransactionMessage() {
     }
 
-    public TransactionMessage(String id, BigDecimal valor, Map<String, String> estabelecimento, Map<String, String> cartao, LocalDateTime efetivadaEm) {
-        this.id = id;
-        this.valor = valor;
-        this.estabelecimento = estabelecimento;
-        this.cartao = cartao;
-        this.efetivadaEm = efetivadaEm;
+    public TransactionMessage(TransactionModel transactionModel) {
+        this.id = transactionModel.getId();
+        this.valor = transactionModel.getValor();
+        this.estabelecimento = transactionModel.getEstabelecimento();
+        this.cartao = transactionModel.getCartao();
+        this.efetivadaEm = transactionModel.getEfetivadaEm();
     }
 
     public String getId() {
@@ -47,5 +49,9 @@ public class TransactionMessage {
 
     public TransactionModel toTransaction() {
         return new TransactionModel(id, valor, estabelecimento, cartao, efetivadaEm);
+    }
+
+    public static Page<TransactionMessage> converter(Page<TransactionModel> transactions) {
+        return transactions.map(TransactionMessage::new);
     }
 }
