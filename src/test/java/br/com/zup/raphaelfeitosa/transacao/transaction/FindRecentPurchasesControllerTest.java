@@ -16,11 +16,8 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -52,8 +49,6 @@ class FindRecentPurchasesControllerTest {
         estabelecimento.put("endereco", "Suite 521 164 Pablo Ranch, Waldoton, NE 85149-1084");
         estabelecimento.put("cidade", "Mannport");
 
-        List<TransactionModel> getTransactions = new ArrayList<>();
-
         for (var i = 1; i <= 10; i++) {
             BigDecimal valorRandomico = new BigDecimal(i + Math.random());
             BigDecimal valorFormatado = valorRandomico.setScale(2, RoundingMode.DOWN);
@@ -66,16 +61,7 @@ class FindRecentPurchasesControllerTest {
                     LocalDateTime.now().minusDays(i)
             );
             transactionRepository.save(transactions);
-            getTransactions.add(transactions);
         }
-
-        List<TransactionMessage> transactionMessages =
-                getTransactions
-                        .stream()
-                        .map(TransactionMessage::new)
-                        .collect(Collectors.toList());
-
-        String response = mapper.writeValueAsString(transactionMessages);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/v1/cartoes/9999-9999-9999-9999/transacoes"))
@@ -83,12 +69,7 @@ class FindRecentPurchasesControllerTest {
                         .status()
                         .isOk())
                 .andExpect(
-                        MockMvcResultMatchers
-                                .content()
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(
-                        MockMvcResultMatchers
-                                .content().json(response));
+                        MockMvcResultMatchers.jsonPath("$.numberOfElements").value(10));
     }
 
     @Test
