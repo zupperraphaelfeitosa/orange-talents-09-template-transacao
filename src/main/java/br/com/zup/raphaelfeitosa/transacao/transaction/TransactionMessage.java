@@ -13,6 +13,8 @@ public class TransactionMessage {
     private BigDecimal valor;
     private Map<String, String> estabelecimento = new HashMap<>();
     private Map<String, String> cartao = new HashMap<>();
+    //    @JsonSerialize(using = LocalDateTimeSerializer.class)
+//    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime efetivadaEm;
 
     @Deprecated
