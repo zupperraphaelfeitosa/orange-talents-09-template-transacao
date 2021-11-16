@@ -1,5 +1,6 @@
 package br.com.zup.raphaelfeitosa.transacao.transaction;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ public class TransactionMessage {
     private BigDecimal valor;
     private Map<String, String> estabelecimento = new HashMap<>();
     private Map<String, String> cartao = new HashMap<>();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime efetivadaEm;
 
     @Deprecated

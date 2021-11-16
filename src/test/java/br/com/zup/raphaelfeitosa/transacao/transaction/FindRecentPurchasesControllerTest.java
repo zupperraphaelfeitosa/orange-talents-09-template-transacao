@@ -1,7 +1,6 @@
 package br.com.zup.raphaelfeitosa.transacao.transaction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -9,36 +8,37 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Transactional
 class FindRecentPurchasesControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private Gson gson;
+    private ObjectMapper mapper;
 
     @Autowired
     private TransactionRepository transactionRepository;
 
     @Test
     void deveriaRetornaAsDezUltimasTransacoesComSucessoComRetorno200() throws Exception {
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.findAndRegisterModules();
 
         Map<String, String> cartao = new HashMap<>();
         cartao.put("id", "9999-9999-9999-9999");
@@ -48,6 +48,8 @@ class FindRecentPurchasesControllerTest {
         estabelecimento.put("nome", "Freida Convict");
         estabelecimento.put("endereco", "Suite 521 164 Pablo Ranch, Waldoton, NE 85149-1084");
         estabelecimento.put("cidade", "Mannport");
+
+        List<TransactionModel> getTransactions = new ArrayList<>();
 
         for (var i = 1; i <= 10; i++) {
             BigDecimal valorRandomico = new BigDecimal(i + Math.random());
@@ -61,15 +63,26 @@ class FindRecentPurchasesControllerTest {
                     LocalDateTime.now().minusDays(i)
             );
             transactionRepository.save(transactions);
+            getTransactions.add(transactions);
         }
 
-        mockMvc.perform(MockMvcRequestBuilders
+        List<TransactionMessage> transactionMessages =
+                getTransactions
+                        .stream()
+                        .map(TransactionMessage::new)
+                        .collect(Collectors.toList());
+
+        String response = mapper.writeValueAsString(transactionMessages);
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/v1/cartoes/9999-9999-9999-9999/transacoes"))
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isOk())
                 .andExpect(
-                        MockMvcResultMatchers.jsonPath("$.numberOfElements").value(10));
+                        MockMvcResultMatchers.jsonPath("$.numberOfElements").value(10))
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(response));
     }
 
     @Test
